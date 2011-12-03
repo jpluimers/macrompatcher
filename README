@@ -1,0 +1,3 @@
+This is a tool and associated library intended to apply known ROM modifications to 68k Macintosh ROMs.
+
+It currently knows about Mac II, IIx, SE/30 ROMs as "24bit" ROMs, and IIsi/IIci and higher ROMs, although it is most tested with machines that have a ROM SIMM slot, such as the Mac II, IIx, SE/30, IIsi, IIci, Quadra 700, etc.
