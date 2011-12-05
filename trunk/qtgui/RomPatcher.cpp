@@ -27,7 +27,7 @@ RomPatcher::RomPatcher()
 	yoffset += 25;
 	checksum->setMinimumSize(mywidth, 10);
 
-	applyRomdisk = new QRadioButton("Apply ROMdisk Driver", this);
+	applyRomdisk = new QCheckBox("Apply ROMdisk Driver", this);
 	applyRomdisk->move(xoffset, yoffset);
 	yoffset += 25;
 	applyRomdisk->setMinimumSize(mywidth, 10);
@@ -140,7 +140,7 @@ void RomPatcher::updateChecksumUI()
 {
 	uint32_t cksum;
 	GetChecksum(rom, &cksum);
-    checksum->setText(QString().sprintf("%#x", cksum));
+        checksum->setText(QString().sprintf("Checksum: %#x", cksum));
 }
 
 void RomPatcher::applyMods()
