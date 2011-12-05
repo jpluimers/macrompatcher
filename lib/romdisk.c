@@ -27,3 +27,21 @@ RomErr InstallRomdiskDrvr(RomCtx *rom) {
 
 	return eSuccess;
 }
+
+RomErr InstallRomdiskImage(RomCtx *rom, uint8_t *image, uint32_t imagesize) {
+	if(!rom || !rom->data) return eParmErr;
+
+	if(imagesize != (512*1024)) {
+		return eParmErr;
+	}
+	
+	rom->datasize = (512*1024) + imagesize;
+	rom->data = realloc(rom->data, rom->datasize);
+	if(!rom->data) {
+		rom->datasize = 0;
+		return eParmErr;
+	}
+	memcpy(rom->data+(512*1024), image, imagesize);
+
+	return eSuccess;
+}
