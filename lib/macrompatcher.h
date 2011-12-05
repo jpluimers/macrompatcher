@@ -2,6 +2,10 @@
 #define __MACROMPATCHER_H__ 1
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Known types of ROM images. */
 enum RomType {
 	eUnknown = 0,
@@ -61,5 +65,9 @@ RomErr UpdateChecksum(RomCtx *rom);
 const char *GetROMErrString(RomErr err);
 RomErr GetDRVROffset(RomCtx *rom, uint16_t drvrid, uint32_t *offset);
 RomErr InstallRomdiskDrvr(RomCtx *rom);
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif /* __MACROMPATCHER_H__ */
