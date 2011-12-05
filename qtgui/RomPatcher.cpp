@@ -100,8 +100,7 @@ void RomPatcher::updateChecksumUI()
 	uint32_t cksum;
 	char *cksumstr = NULL;
 	GetChecksum(rom, &cksum);
-	asprintf(&cksumstr, "Checksum: %#x", cksum);
-	checksum->setText(cksumstr);
+        checksum->setText(QString().sprintf("%#x", cksum));
 	free(cksumstr);
 }
 

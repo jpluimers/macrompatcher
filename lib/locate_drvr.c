@@ -1,4 +1,8 @@
+#ifdef __MINGW32__
+#include <winsock.h>
+#else
 #include <arpa/inet.h>
+#endif
 #include <stdio.h>
 #include "macrompatcher.h"
 

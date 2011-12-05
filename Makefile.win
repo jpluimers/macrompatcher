@@ -1,0 +1,5 @@
+# Windows requires -lws2_32 for htons(), htonl(), etc.
+# Use make -f Makefile.win to use this Makefile, which adds
+# the required library to the LDFLAGS.
+LDFLAGS += -lws2_32
+include Makefile
