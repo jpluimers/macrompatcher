@@ -25,7 +25,7 @@ private:
 	QMenu *fileMenu;
 
 	QLabel *checksum;
-	QRadioButton *applyRomdisk;
+	QCheckBox *applyRomdisk;
 	QLineEdit *romdiskFile;
 	QPushButton *romdiskSelect;
 
