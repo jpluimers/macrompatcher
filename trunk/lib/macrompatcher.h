@@ -65,6 +65,7 @@ RomErr UpdateChecksum(RomCtx *rom);
 const char *GetROMErrString(RomErr err);
 RomErr GetDRVROffset(RomCtx *rom, uint16_t drvrid, uint32_t *offset);
 RomErr InstallRomdiskDrvr(RomCtx *rom);
+RomErr InstallRomdiskImage(RomCtx *rom, uint8_t *image, uint32_t imagesize);
 
 #ifdef __cplusplus
 };

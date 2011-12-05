@@ -13,6 +13,7 @@ private slots:
 	void save();
 	void quit();
 	void applyMods();
+	void selectDiskImage();
 
 private:
 	void updateChecksumUI();
@@ -25,6 +26,8 @@ private:
 
 	QLabel *checksum;
 	QRadioButton *applyRomdisk;
+	QLineEdit *romdiskFile;
+	QPushButton *romdiskSelect;
 
 	RomCtx *rom;
 };

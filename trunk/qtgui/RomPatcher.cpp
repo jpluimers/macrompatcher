@@ -16,7 +16,7 @@ RomPatcher::RomPatcher()
 	fileMenu->addSeparator();
 	fileMenu->addAction(exitAction);
 
-	int mywidth = 200;
+	int mywidth = 300;
 	int myheight = 300;
 	int yoffset = 25;
 	int xoffset = 5;
@@ -29,8 +29,21 @@ RomPatcher::RomPatcher()
 
 	applyRomdisk = new QRadioButton("Apply ROMdisk Driver", this);
 	applyRomdisk->move(xoffset, yoffset);
+	yoffset += 25;
 	applyRomdisk->setMinimumSize(mywidth, 10);
 	applyRomdisk->setEnabled(false);
+
+	romdiskFile = new QLineEdit(this);
+	romdiskFile->move(xoffset, yoffset);
+	romdiskFile->setMinimumSize(mywidth-110, 5);
+	romdiskFile->setEnabled(false);
+
+	romdiskSelect = new QPushButton("ROMdisk Image", this);
+	romdiskSelect->move(mywidth-105, yoffset);
+	romdiskSelect->setMinimumSize(100, 5);
+	yoffset += 25;
+	connect(romdiskSelect, SIGNAL(clicked()), this, SLOT(selectDiskImage()));
+	romdiskSelect->setEnabled(false);
 
 	setWindowTitle(tr("RomPatcher"));
 	setMinimumSize(mywidth, myheight);
@@ -63,6 +76,8 @@ void RomPatcher::open()
 
 		updateChecksumUI();
 		applyRomdisk->setEnabled(true);
+		romdiskFile->setEnabled(true);
+		romdiskSelect->setEnabled(true);
 	}
 }
 
@@ -78,9 +93,35 @@ void RomPatcher::save()
 
 		// save the RomCtx structure here
 		applyMods();
+
 		RomErr err = UpdateChecksum(rom);
 		if(err != eSuccess) {
 			fprintf(stderr, "Error updating checksum: %d %s\n", err, GetROMErrString(err));
+			QMessageBox::critical(this, "Error", "Could not update checksum");
+		}
+
+		QString romdiskimagename = romdiskFile->text();
+		if(romdiskimagename != "") {
+			QFile imagefile(romdiskimagename);
+			if(!imagefile.open(QIODevice::ReadOnly)) {
+				QMessageBox::critical(this, "Error", "Could not open ROMdisk Image");
+				return;
+			}
+
+			if(imagefile.size() != (512*1024)) {
+				QMessageBox::critical(this, "Error", "ROMdisk Image is the wrong size");
+				return;
+			}
+
+			uint8_t *image = (uint8_t*)calloc(1, imagefile.size());
+			QDataStream imagestream(&imagefile);
+			imagestream.readRawData((char*)image, (int)imagefile.size());
+			imagefile.close();
+			err = InstallRomdiskImage(rom, image, (uint32_t)imagefile.size());
+			if(err) {
+				QMessageBox::critical(this, "Error", "ROMdisk Image couldn't be installed");
+				return;
+			}
 		}
 		
 		QDataStream stream(&file);
@@ -115,4 +156,10 @@ void RomPatcher::applyMods()
 	}
 
 	updateChecksumUI();
+}
+
+void RomPatcher::selectDiskImage()
+{
+	QString s = QFileDialog::getOpenFileName(this, "Select ROMdisk Image", "./", "All Files (*.*)");
+	romdiskFile->setText(s);
 }

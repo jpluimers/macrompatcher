@@ -15,10 +15,11 @@
 void usage(char *progname) {
 	fprintf(stderr, "Usage: %s [OPTION]\n", progname);
 	fprintf(stderr, "Options:\n");
-	fprintf(stderr, " -f, --infile=FILE      Specify the ROM file to operate on\n");
-	fprintf(stderr, " -o, --outfile=FILE     Specify the filename to write the modified ROM to\n");
-	fprintf(stderr, " -c, --checksum         Compute and print the checksum\n");
-	fprintf(stderr, " -r, --romdiskdrvr      Install the ROMdisk driver\n");
+	fprintf(stderr, " -f, --infile=FILE       Specify the ROM file to operate on\n");
+	fprintf(stderr, " -o, --outfile=FILE      Specify the filename to write the modified ROM to\n");
+	fprintf(stderr, " -c, --checksum          Compute and print the checksum\n");
+	fprintf(stderr, " -r, --romdiskdrvr       Install the ROMdisk driver\n");
+	fprintf(stderr, "     --romdiskimage=FILE Install the ROMdisk image file\n");
 	return;
 }
 
@@ -30,12 +31,15 @@ int main(int argc, char *argv[]) {
 	char *romname = NULL;
 	int romfd;
 	char *outname = NULL;
+	uint8_t *diskimage = NULL;
+	uint32_t diskimagelen = 0;
 	RomErr err = 0;
 	struct option o[] = {
 		{"checksum", 0, 0, 'c'},
 		{"infile", 1, 0, 'f'},
 		{"outfile", 1, 0, 'o'},
 		{"romdiskdrvr", 0, 0, 'r'},
+		{"romdiskimage", 1, 0, 1},
 		{"help", 0, 0, 'h'},
 		{0, 0, 0, 0}
 	};
@@ -53,6 +57,30 @@ int main(int argc, char *argv[]) {
 			case 'f': romname = optarg; break;
 			case 'o': outname = optarg; break;
 			case 'r': apply_romdisk = 1; break;
+			case  1 : /* romdisk image */
+				romfd = open(optarg, O_RDONLY);
+				if(!romfd < 0) {
+					fprintf(stderr, "Could not open romdisk image %s: %d %s\n", optarg, errno, strerror(errno));
+					exit(1);
+				}
+
+				if(fstat(romfd, &sb) < 0) {
+					fprintf(stderr, "Could not stat romdisk image %s: %d %s\n", optarg, errno, strerror(errno));
+					exit(1);
+				}
+
+				diskimagelen = sb.st_size;
+				diskimage = calloc(1, diskimagelen);
+				if(!diskimage) {
+					fprintf(stderr, "Could not allocate romdisk image memory\n");
+					exit(1);
+				}
+				if(read(romfd, diskimage, diskimagelen) < diskimagelen) {
+					fprintf(stderr, "Could not read entire romdisk image into memory: %d %s\n", errno, strerror(errno));
+					exit(1);
+				}
+				close(romfd);
+				break;
 			case 'h': 
 			default:
 				usage(argv[0]);
@@ -120,6 +148,14 @@ int main(int argc, char *argv[]) {
 		if(err != eSuccess) {
 			fprintf(stderr, "Error installing ROMdisk driver: %s\n", GetROMErrString(err));
 			exit(1);
+		}
+
+		if(diskimage) {
+			err = InstallRomdiskImage(rom, diskimage, diskimagelen);
+			if(err != eSuccess) {
+				fprintf(stderr, "Error installing ROMdisk image: %d %s\n", err, GetROMErrString(err));
+				exit(1);
+			}
 		}
 	}
 
