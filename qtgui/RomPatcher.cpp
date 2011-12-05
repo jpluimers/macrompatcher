@@ -139,10 +139,8 @@ void RomPatcher::quit()
 void RomPatcher::updateChecksumUI()
 {
 	uint32_t cksum;
-	char *cksumstr = NULL;
 	GetChecksum(rom, &cksum);
-        checksum->setText(QString().sprintf("%#x", cksum));
-	free(cksumstr);
+    checksum->setText(QString().sprintf("%#x", cksum));
 }
 
 void RomPatcher::applyMods()
