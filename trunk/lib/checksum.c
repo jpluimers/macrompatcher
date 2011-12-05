@@ -1,5 +1,9 @@
 #include <stdlib.h>
+#ifdef __MINGW32__
+#include <winsock.h>
+#else
 #include <arpa/inet.h>
+#endif
 #include "macrompatcher.h"
 
 RomErr GetChecksum(RomCtx *rom, uint32_t *checksum) {

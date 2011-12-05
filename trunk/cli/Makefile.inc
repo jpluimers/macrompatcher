@@ -9,6 +9,6 @@ cli_clean:
 	rm -f $(ROMPATCHER_EXE)
 
 $(ROMPATCHER_EXE): $(ROMPATCHER_SRCS:%.c=%.o) $(ROMLIB_A)
-	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) $(ROMLIB_A)
+	$(CC) $(CFLAGS) -o $@ $< $(ROMLIB_A) $(LDFLAGS)
 
 cli/%o: cli/%.c
