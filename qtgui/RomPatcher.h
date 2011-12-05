@@ -25,7 +25,6 @@ private:
 
 	QLabel *checksum;
 	QRadioButton *applyRomdisk;
-	QPushButton *applyModsGo;
 
 	RomCtx *rom;
 };
