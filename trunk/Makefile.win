@@ -2,4 +2,15 @@
 # Use make -f Makefile.win to use this Makefile, which adds
 # the required library to the LDFLAGS.
 LDFLAGS += -lws2_32
+
+# Because Windows does weird stuff with apps that have
+# "patch" in their name, we have to embed a manifest
+# file into any apps or they will want administrator
+# privileges in order to run.
+EXTRA_LINK_OBJECTS += cli/macrompatcher.res
+
+# Here's the rule to create the .res file...
+%.res: %.rc
+	windres --input $< --output $@ --output-format=coff
+
 include Makefile
