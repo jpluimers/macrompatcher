@@ -32,11 +32,6 @@ RomPatcher::RomPatcher()
 	applyRomdisk->setMinimumSize(mywidth, 10);
 	applyRomdisk->setEnabled(false);
 
-	applyModsGo = new QPushButton("Apply Mods", this);
-	applyModsGo->move(mywidth/2 - (applyModsGo->width())/2, myheight-50);
-	applyModsGo->setEnabled(false);
-	connect(applyModsGo, SIGNAL(clicked()), this, SLOT(applyMods()));
-	
 	setWindowTitle(tr("RomPatcher"));
 	setMinimumSize(mywidth, myheight);
 
@@ -68,7 +63,6 @@ void RomPatcher::open()
 
 		updateChecksumUI();
 		applyRomdisk->setEnabled(true);
-		applyModsGo->setEnabled(true);
 	}
 }
 
@@ -83,6 +77,7 @@ void RomPatcher::save()
 		}
 
 		// save the RomCtx structure here
+		applyMods();
 		RomErr err = UpdateChecksum(rom);
 		if(err != eSuccess) {
 			fprintf(stderr, "Error updating checksum: %d %s\n", err, GetROMErrString(err));
