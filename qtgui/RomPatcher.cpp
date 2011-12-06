@@ -5,16 +5,21 @@ RomPatcher::RomPatcher()
 	openAction = new QAction(tr("&Open"), this);
 	saveAction = new QAction(tr("&Save"), this);
 	exitAction = new QAction(tr("&Exit"), this);
+	splitAction = new QAction(tr("&Split"), this);
 
 	connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
 	connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
 	connect(exitAction, SIGNAL(triggered()), this, SLOT(quit()));
+	connect(splitAction, SIGNAL(triggered()), this, SLOT(splitImage()));
 
 	fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(openAction);
 	fileMenu->addAction(saveAction);
 	fileMenu->addSeparator();
 	fileMenu->addAction(exitAction);
+
+	toolsMenu = menuBar()->addMenu(tr("&Tools"));
+	toolsMenu->addAction(splitAction);
 
 	int mywidth = 300;
 	int myheight = 300;
@@ -93,36 +98,6 @@ void RomPatcher::save()
 
 		// save the RomCtx structure here
 		applyMods();
-
-		RomErr err = UpdateChecksum(rom);
-		if(err != eSuccess) {
-			fprintf(stderr, "Error updating checksum: %d %s\n", err, GetROMErrString(err));
-			QMessageBox::critical(this, "Error", "Could not update checksum");
-		}
-
-		QString romdiskimagename = romdiskFile->text();
-		if(romdiskimagename != "") {
-			QFile imagefile(romdiskimagename);
-			if(!imagefile.open(QIODevice::ReadOnly)) {
-				QMessageBox::critical(this, "Error", "Could not open ROMdisk Image");
-				return;
-			}
-
-			if(imagefile.size() != (512*1024)) {
-				QMessageBox::critical(this, "Error", "ROMdisk Image is the wrong size");
-				return;
-			}
-
-			uint8_t *image = (uint8_t*)calloc(1, imagefile.size());
-			QDataStream imagestream(&imagefile);
-			imagestream.readRawData((char*)image, (int)imagefile.size());
-			imagefile.close();
-			err = InstallRomdiskImage(rom, image, (uint32_t)imagefile.size());
-			if(err) {
-				QMessageBox::critical(this, "Error", "ROMdisk Image couldn't be installed");
-				return;
-			}
-		}
 		
 		QDataStream stream(&file);
 		stream.writeRawData((char*)rom->data, (int)rom->datasize);
@@ -146,10 +121,40 @@ void RomPatcher::updateChecksumUI()
 void RomPatcher::applyMods()
 {
 	if(applyRomdisk->isChecked()) {
-		printf("Romdisk checked, applying\n");
 		RomErr err = InstallRomdiskDrvr(rom);
 		if(err != eSuccess) {
 			fprintf(stderr, "Error applying romdisk drvr: %d %s\n", err, GetROMErrString(err));
+			QMessageBox::critical(this, "Error", "Could not apply ROMdisk driver");
+		}
+	}
+
+	RomErr err = UpdateChecksum(rom);
+	if(err != eSuccess) {
+		fprintf(stderr, "Error updating checksum: %d %s\n", err, GetROMErrString(err));
+		QMessageBox::critical(this, "Error", "Could not update checksum");
+	}
+
+	QString romdiskimagename = romdiskFile->text();
+	if(romdiskimagename != "") {
+		QFile imagefile(romdiskimagename);
+		if(!imagefile.open(QIODevice::ReadOnly)) {
+			QMessageBox::critical(this, "Error", "Could not open ROMdisk Image");
+			return;
+		}
+
+		if(imagefile.size() != (512*1024)) {
+			QMessageBox::critical(this, "Error", "ROMdisk Image is the wrong size");
+			return;
+		}
+
+		uint8_t *image = (uint8_t*)calloc(1, imagefile.size());
+		QDataStream imagestream(&imagefile);
+		imagestream.readRawData((char*)image, (int)imagefile.size());
+		imagefile.close();
+		err = InstallRomdiskImage(rom, image, (uint32_t)imagefile.size());
+		if(err) {
+			QMessageBox::critical(this, "Error", "ROMdisk Image couldn't be installed");
+			return;
 		}
 	}
 
@@ -160,4 +165,48 @@ void RomPatcher::selectDiskImage()
 {
 	QString s = QFileDialog::getOpenFileName(this, "Select ROMdisk Image", "./", "All Files (*.*)");
 	romdiskFile->setText(s);
+}
+
+void RomPatcher::splitImage()
+{
+	QString s = QFileDialog::getSaveFileName(this, "Select split image", "./", "All Files (*.*)");
+
+	applyMods();
+
+	int i;
+	QFile *outfiles[4];
+	QDataStream *outstreams[4];
+	for(i = 0; i < 4; i++) {
+		outfiles[i] = new QFile(s + "_" + (i+49));
+		if(!outfiles[i]) {
+			QMessageBox::critical(this, "Error", "Couldn't open file for splitting");
+			return;
+			
+		}
+		if(!outfiles[i]->open(QIODevice::WriteOnly)) {
+			QMessageBox::critical(this, "Error", "Couldn't open file for splitting");
+			return;
+		}
+
+		outstreams[i] = new QDataStream(outfiles[i]);
+		if(!outstreams[i]) {
+			QMessageBox::critical(this, "Error", "Couldn't open stream for splitting");
+			return;
+		}
+	}
+
+	uint32_t bytecount = 0;
+	do {
+		for(i = 3; i>=0; i--, bytecount++) {
+			outstreams[i]->writeRawData((char*)(rom->data+bytecount), 1);
+		}
+	}while(bytecount < rom->datasize);
+
+	for(i = 0; i < 4; i++) {
+		outfiles[i]->close();
+		delete outfiles[i];
+		delete outstreams[i];
+	}
+
+	return;
 }
