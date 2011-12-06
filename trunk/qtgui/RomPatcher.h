@@ -14,6 +14,7 @@ private slots:
 	void quit();
 	void applyMods();
 	void selectDiskImage();
+	void splitImage();
 
 private:
 	void updateChecksumUI();
@@ -21,8 +22,10 @@ private:
 	QAction *openAction;
 	QAction *saveAction;
 	QAction *exitAction;
+	QAction *splitAction;
 
 	QMenu *fileMenu;
+	QMenu *toolsMenu;
 
 	QLabel *checksum;
 	QCheckBox *applyRomdisk;
