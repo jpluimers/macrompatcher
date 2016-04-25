@@ -36,7 +36,7 @@ RomErr InstallRomdiskImage(RomCtx *rom, uint8_t *image, uint32_t imagesize) {
 	}
 	
 	rom->datasize = (512*1024) + imagesize;
-	rom->data = realloc(rom->data, rom->datasize);
+	rom->data = (uint8_t*)realloc(rom->data, rom->datasize);
 	if(!rom->data) {
 		rom->datasize = 0;
 		return eParmErr;

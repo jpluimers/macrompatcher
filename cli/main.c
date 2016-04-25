@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-#include "macrompatcher.h"
+#include "../lib/macrompatcher.h"
 
 #define MINROMSIZE 262144 /* 256k is the smallest we know how to use */
 #define MAXROMSIZE 2097152 /* 2MB is the largest we know what to do with */
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 	char *outname = NULL;
 	uint8_t *diskimage = NULL;
 	uint32_t diskimagelen = 0;
-	RomErr err = 0;
+	RomErr err = (RomErr)0;
 	struct option o[] = {
 		{"checksum", 0, 0, 'c'},
 		{"infile", 1, 0, 'f'},
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 				}
 
 				diskimagelen = sb.st_size;
-				diskimage = calloc(1, diskimagelen);
+				diskimage = (uint8_t*)calloc(1, diskimagelen);
 				if(!diskimage) {
 					fprintf(stderr, "Could not allocate romdisk image memory\n");
 					exit(1);
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	rom = calloc(1, sizeof(RomCtx));
+	rom = (RomCtx*)calloc(1, sizeof(RomCtx));
 	if(!rom) {
 		fprintf(stderr, "Could not allocate memory for ROM context\n");
 		exit(1);
@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	rom->data = calloc(1, sb.st_size);
+	rom->data = (uint8_t*)calloc(1, sb.st_size);
 	if(!rom->data) {
 		fprintf(stderr, "Could not allocate RAM for the ROM image\n");
 		exit(1);
